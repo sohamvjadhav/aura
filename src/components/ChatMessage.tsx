@@ -22,7 +22,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
 
   return (
     <div className={cn(
-      "flex w-full gap-3 chat-message",
+      "flex w-full gap-3 chat-message mb-4",
       isUser ? "justify-end" : "justify-start"
     )}>
       {!isUser && (
@@ -34,7 +34,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
       )}
       
       <Card className={cn(
-        "max-w-[80%] p-4 rounded-2xl shadow-sm",
+        "max-w-[80%] p-5 rounded-2xl shadow-md",
         isUser 
           ? "bg-primary text-primary-foreground ml-auto" 
           : "bg-card border-border"
@@ -47,7 +47,7 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           />
         )}
         <div className={cn(
-          "prose prose-sm max-w-none",
+          "prose max-w-none",
           isUser ? "prose-invert" : ""
         )}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
