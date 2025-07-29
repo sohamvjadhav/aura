@@ -80,8 +80,8 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask Aura about sustainable living, share an image, or get eco-friendly suggestions..."
-            className="min-h-[50px] max-h-32 resize-none pr-12 rounded-xl border-border focus:ring-primary"
+            placeholder="Ask Aura about anything sustainability..."
+            className="min-h-[40px] max-h-28 resize-none pr-10 rounded-lg border-border focus:ring-primary text-sm"
             disabled={isLoading}
           />
           
@@ -89,7 +89,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
             type="button"
             size="sm"
             variant="ghost"
-            className="absolute right-2 top-2 h-8 w-8 p-0 hover:bg-accent"
+            className="absolute right-1 top-1.5 h-7 w-7 p-0 hover:bg-accent"
             onClick={() => fileInputRef.current?.click()}
             disabled={isLoading}
           >
@@ -107,9 +107,9 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
         
         <Button 
           type="submit" 
-          size="lg"
+          size="default"
           className={cn(
-            "h-[50px] px-6 rounded-xl bg-primary hover:bg-primary/90",
+            "h-[40px] px-4 rounded-lg bg-primary hover:bg-primary/90",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
           disabled={(!message.trim() && !selectedImage) || isLoading}

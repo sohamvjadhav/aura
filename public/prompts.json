@@ -1,0 +1,42 @@
+[
+  {
+    "icon": "Recycle",
+    "title": "Waste Reduction",
+    "prompt": "How can I reduce waste in my daily routine?"
+  },
+  {
+    "icon": "Lightbulb",
+    "title": "Energy Efficiency",
+    "prompt": "What are some simple ways to make my home more energy efficient?"
+  },
+  {
+    "icon": "Leaf",
+    "title": "Sustainable Fashion",
+    "prompt": "How can I build a more sustainable wardrobe?"
+  },
+  {
+    "icon": "Recycle",
+    "title": "Composting",
+    "prompt": "How do I start composting at home?"
+  },
+  {
+    "icon": "Lightbulb",
+    "title": "Renewable Energy",
+    "prompt": "What are the pros and cons of solar panels for my house?"
+  },
+  {
+    "icon": "Leaf",
+    "title": "Ethical Sourcing",
+    "prompt": "How can I identify ethically sourced products?"
+  },
+  {
+    "icon": "Leaf",
+    "title": "Water Conservation",
+    "prompt": "Tips for conserving water at home?"
+  },
+  {
+    "icon": "Recycle",
+    "title": "E-waste Recycling",
+    "prompt": "Where can I recycle old electronics?"
+  }
+]

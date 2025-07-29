@@ -10,8 +10,11 @@ import { API_CONFIG, isApiConfigured } from "@/config/api";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
+const MAX_HISTORY_LENGTH = 50;
+
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -29,19 +32,34 @@ export const ChatInterface = () => {
     scrollToBottom();
   }, [messages]);
 
-  const generateAIResponse = async (userMessage: string, image?: File): Promise<string> => {
+  const generateAIResponse = async (
+    userMessage: string,
+    currentConversationHistory: Message[],
+    image?: File
+  ): Promise<string> => {
     if (!isApiConfigured()) {
       throw new Error("API key not configured. Please check the developer configuration.");
     }
 
-    // Prepare the request body with proper system prompt
-    const parts: any[] = [
-      {
-        text: `${API_CONFIG.SYSTEM_PROMPT}\n\nUser message: "${userMessage}"`
-      }
-    ];
+    const contents: any[] = [];
 
-    // If there's an image, convert it to base64 and add to parts
+    contents.push({
+      role: 'user',
+      parts: [{ text: API_CONFIG.SYSTEM_PROMPT }]
+    });
+    contents.push({
+      role: 'model',
+      parts: [{ text: "Okay, I understand. I will act as Aura, the Sustainability Copilot, and integrate sustainability into every topic." }]
+    });
+
+    currentConversationHistory.forEach(msg => {
+      contents.push({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      });
+    });
+
+    const userParts: any[] = [{ text: userMessage }];
     if (image) {
       const base64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
@@ -52,13 +70,17 @@ export const ChatInterface = () => {
         reader.readAsDataURL(image);
       });
 
-      parts.push({
+      userParts.push({
         inline_data: {
           mime_type: image.type,
           data: base64
         }
       });
     }
+    contents.push({
+      role: 'user',
+      parts: userParts
+    });
 
     const response = await fetch(`${API_CONFIG.GOOGLE_AI_ENDPOINT}?key=${API_CONFIG.GOOGLE_AI_API_KEY}`, {
       method: 'POST',
@@ -66,9 +88,7 @@ export const ChatInterface = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: parts
-        }],
+        contents: contents,
         generationConfig: {
           temperature: 0.7,
           topK: 40,
@@ -113,7 +133,6 @@ export const ChatInterface = () => {
   const handleSendMessage = async (content: string, image?: File) => {
     if (!content.trim() && !image) return;
 
-    // Create user message
     const userMessage: Message = {
       id: Date.now().toString() + '-user',
       content: content || (image ? "📷 Image uploaded" : ""),
@@ -123,10 +142,16 @@ export const ChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    setConversationHistory(prev => {
+      const newHistory = [...prev, userMessage];
+      return newHistory.slice(Math.max(newHistory.length - MAX_HISTORY_LENGTH, 0));
+    });
+
     setIsLoading(true);
 
     try {
-      const aiResponse = await generateAIResponse(content, image);
+      const aiResponse = await generateAIResponse(content, conversationHistory, image);
       
       const aiMessage: Message = {
         id: Date.now().toString() + '-ai',
@@ -136,6 +161,11 @@ export const ChatInterface = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      setConversationHistory(prev => {
+        const newHistory = [...prev, aiMessage];
+        return newHistory.slice(Math.max(newHistory.length - MAX_HISTORY_LENGTH, 0));
+      });
+
     } catch (error) {
       console.error('Error generating AI response:', error);
       toast({
@@ -162,18 +192,17 @@ export const ChatInterface = () => {
 
   const clearChat = () => {
     setMessages([]);
+    setConversationHistory([]);
     toast({
       title: "Chat Cleared",
       description: "Your conversation has been reset."
     });
   };
 
-  // Show configuration warning if API key is not set
   const showConfigWarning = !isApiConfigured();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
       <div className="border-b border-border bg-card/95 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -202,7 +231,6 @@ export const ChatInterface = () => {
         </div>
       </div>
 
-      {/* Configuration Warning */}
       {showConfigWarning && (
         <div className="max-w-4xl mx-auto px-4 py-2">
           <Alert className="border-amber-200 bg-amber-50 text-amber-800">
@@ -223,7 +251,6 @@ export const ChatInterface = () => {
         </div>
       )}
 
-      {/* Chat Area */}
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
         {messages.length === 0 ? (
           <WelcomeScreen onExampleClick={handleExampleClick} />
@@ -249,7 +276,6 @@ export const ChatInterface = () => {
           </ScrollArea>
         )}
 
-        {/* Input */}
         <div className="p-4">
           <ChatInput 
             onSendMessage={handleSendMessage}
