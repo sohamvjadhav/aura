@@ -2,6 +2,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Leaf, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export interface Message {
   id: string;
@@ -48,9 +50,9 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           "prose prose-sm max-w-none",
           isUser ? "prose-invert" : ""
         )}>
-          <p className="m-0 leading-relaxed whitespace-pre-wrap">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
-          </p>
+          </ReactMarkdown>
         </div>
         <div className={cn(
           "text-xs mt-2 opacity-70",
