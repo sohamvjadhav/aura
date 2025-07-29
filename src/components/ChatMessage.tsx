@@ -47,10 +47,10 @@ export const ChatMessage = ({ message }: ChatMessageProps) => {
           />
         )}
         <div className={cn(
-          "prose max-w-none text-sm", /* Applied text-sm for all screen sizes */
+          "prose max-w-none text-[0.7rem] sm:text-sm", /* Changed to text-[0.7rem] for even smaller text on mobile */
           isUser ? "prose-invert" : "",
           !isUser && "fade-in",
-          "prose-sm" /* Applied prose-sm for all screen sizes */
+          "prose-[0.7rem] sm:prose-sm" /* Changed to prose-[0.7rem] for even smaller text on mobile */
         )}>
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {message.content}
