@@ -34,10 +34,10 @@ export const ChatInterface = () => {
       throw new Error("API key not configured. Please check the developer configuration.");
     }
 
-    // Prepare the request body
+    // Prepare the request body with proper system prompt
     const parts: any[] = [
       {
-        text: `As Aura, the Sustainability Copilot, respond to this message with practical, encouraging sustainability advice. Always reframe topics through an environmental lens and provide actionable suggestions. Message: "${userMessage}"`
+        text: `${API_CONFIG.SYSTEM_PROMPT}\n\nUser message: "${userMessage}"`
       }
     ];
 
