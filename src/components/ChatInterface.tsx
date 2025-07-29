@@ -4,17 +4,15 @@ import { Button } from "@/components/ui/button";
 import { ChatMessage, Message } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { WelcomeScreen } from "./WelcomeScreen";
-import { RotateCcw, Settings } from "lucide-react";
+import { RotateCcw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { API_CONFIG, isApiConfigured } from "@/config/api";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [showApiKeyInput, setShowApiKeyInput] = useState(true);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -32,8 +30,8 @@ export const ChatInterface = () => {
   }, [messages]);
 
   const generateAIResponse = async (userMessage: string, image?: File): Promise<string> => {
-    if (!apiKey) {
-      throw new Error("Please enter your Google AI API key first");
+    if (!isApiConfigured()) {
+      throw new Error("API key not configured. Please check the developer configuration.");
     }
 
     // Prepare the request body
@@ -62,7 +60,7 @@ export const ChatInterface = () => {
       });
     }
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`, {
+    const response = await fetch(`${API_CONFIG.GOOGLE_AI_ENDPOINT}?key=${API_CONFIG.GOOGLE_AI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -151,10 +149,10 @@ export const ChatInterface = () => {
   };
 
   const handleExampleClick = (prompt: string) => {
-    if (!apiKey) {
+    if (!isApiConfigured()) {
       toast({
-        title: "API Key Required",
-        description: "Please enter your Google AI API key first to start chatting.",
+        title: "Configuration Required",
+        description: "The API is not yet configured. Please check the developer setup.",
         variant: "destructive"
       });
       return;
@@ -170,55 +168,8 @@ export const ChatInterface = () => {
     });
   };
 
-  const handleApiKeySubmit = () => {
-    if (apiKey.trim()) {
-      setShowApiKeyInput(false);
-      toast({
-        title: "API Key Set",
-        description: "You can now start chatting with Aura!"
-      });
-    }
-  };
-
-  if (showApiKeyInput) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6 nature-pattern">
-        <Card className="w-full max-w-md p-6 space-y-4">
-          <div className="text-center space-y-2">
-            <h2 className="text-xl font-semibold">Setup Required</h2>
-            <p className="text-sm text-muted-foreground">
-              Enter your Google AI API key to start chatting with Aura
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">Google AI API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              placeholder="Enter your API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleApiKeySubmit()}
-            />
-          </div>
-          
-          <Button 
-            onClick={handleApiKeySubmit}
-            className="w-full"
-            disabled={!apiKey.trim()}
-          >
-            Start Chatting
-          </Button>
-          
-          <div className="text-xs text-muted-foreground text-center">
-            <p>Get your API key from the Google AI Studio dashboard.</p>
-            <p>Your key is stored locally and never shared.</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
+  // Show configuration warning if API key is not set
+  const showConfigWarning = !isApiConfigured();
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -236,15 +187,6 @@ export const ChatInterface = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowApiKeyInput(true)}
-              className="gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </Button>
             {messages.length > 0 && (
               <Button
                 variant="ghost"
@@ -259,6 +201,27 @@ export const ChatInterface = () => {
           </div>
         </div>
       </div>
+
+      {/* Configuration Warning */}
+      {showConfigWarning && (
+        <div className="max-w-4xl mx-auto px-4 py-2">
+          <Alert className="border-amber-200 bg-amber-50 text-amber-800">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Developer Setup Required:</strong> Please configure your Google AI API key in <code>src/config/api.ts</code> to enable the chatbot.
+              <br />
+              <a 
+                href="https://aistudio.google.com/app/apikey" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="underline hover:no-underline"
+              >
+                Get your API key from Google AI Studio →
+              </a>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
       {/* Chat Area */}
       <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
